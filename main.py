@@ -39,14 +39,16 @@ def create_meeting(meeting: Meeting):
     headers = {
         "apikey": SUPABASE_API_KEY,
         "Authorization": f"Bearer {SUPABASE_API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
     }
-    data = meeting.dict()
+    data = meeting.model_dump()  # Updated for Pydantic v2
     # Accept both string and list for with_whom
     if isinstance(data["with_whom"], str):
-        data["with_whom"] = [data["with_whom"]]
-    resp = requests.post(url, headers=headers, json=[data])
-    if resp.status_code in (200, 201):
+        # Split comma-separated names
+        data["with_whom"] = [name.strip() for name in data["with_whom"].split(",")]
+    resp = requests.post(url, headers=headers, json=data)
+    if resp.status_code in (200, 201, 204):
         return {"message": "Meeting saved"}
     else:
         raise HTTPException(status_code=500, detail=f"Supabase error: {resp.text}")

@@ -1116,13 +1116,17 @@
         timeEl.textContent = new Date(meetingTime).toLocaleString();
         meetingInfoDisplay.style.display = '';
         fetchMeetings();
+        // Clear form
+        meetingWithInput.value = '';
+        meetingTimeInput.value = '';
       } else {
+        const errorData = await res.json().catch(() => ({ detail: 'Unknown error' }));
         meetingFormStatus.style.color = 'var(--danger-500)';
-        meetingFormStatus.textContent = 'Error saving meeting.';
+        meetingFormStatus.textContent = `Error: ${errorData.detail || 'Could not save meeting'}`;
       }
     } catch (err) {
       meetingFormStatus.style.color = 'var(--danger-500)';
-      meetingFormStatus.textContent = 'Could not connect to backend.';
+      meetingFormStatus.textContent = 'Could not connect to backend: ' + err.message;
     }
   });
 
