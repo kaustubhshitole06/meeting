@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Meeting Assistant</title>
+  <style>
+    :root {
+      --primary-500: #6366f1;
+      --primary-600: #4f46e5;
+      --primary-700: #4338ca;
+      --secondary-500: #06b6d4;
+      --secondary-600: #0891b2;
+      --success-500: #10b981;
+      --success-600: #059669;
+      --danger-500: #ef4444;
+      --danger-600: #dc2626;
+      --warning-500: #f59e0b;
+      
+      /* Light mode colors */
+      --bg-primary: #f9fafb;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #f3f4f6;
+      --text-primary: #111827;
+      --text-secondary: #374151;
+      --text-tertiary: #6b7280;
+      --border-primary: #e5e7eb;
+      --border-secondary: #d1d5db;
+      --surface-primary: #ffffff;
+      --surface-secondary: #f9fafb;
+      --surface-tertiary: #f3f4f6;
+      
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
+    }
+
+    /* Dark mode colors */
+    [data-theme="dark"] {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-tertiary: #94a3b8;
+      --border-primary: #334155;
+      --border-secondary: #475569;
+      --surface-primary: #1e293b;
+      --surface-secondary: #334155;
+      --surface-tertiary: #475569;
+      
+      --gray-50: #1e293b;
+      --gray-100: #334155;
+      --gray-200: #475569;
+      --gray-300: #64748b;
+      --gray-400: #94a3b8;
+      --gray-500: #cbd5e1;
+      --gray-600: #e2e8f0;
+      --gray-700: #f1f5f9;
+      --gray-800: #f8fafc;
+      --gray-900: #ffffff;
+      
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; 
+      margin: 0;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    [data-theme="dark"] body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+    
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      gap: 2rem;
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+
+    .main-card {
+      background: var(--surface-primary);
+      border-radius: var(--radius-xl);
+      padding: 2.5rem;
+      box-shadow: var(--shadow-xl);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-primary);
+      transition: all 0.3s ease;
+    }
+
+    .app-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+      align-items: start;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .app-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0 0 0.5rem 0;
+      letter-spacing: -0.025em;
+    }
+
+    .meeting-info { 
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius-lg);
+      font-size: 1.1rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .meeting-info .icon {
+      font-size: 1.25rem;
+    }
+    
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .control-card {
+      background: var(--surface-secondary);
+      border: 2px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .control-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-500), var(--secondary-500));
+    }
+
+    .control-card:hover {
+      border-color: var(--primary-300);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .control-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .control-title .icon {
+      font-size: 1.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      min-width: 140px;
+      justify-content: center;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--danger-500), var(--danger-600));
+      color: white;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--danger-600), var(--danger-700));
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+      color: white;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn:disabled {
+      background: var(--gray-300);
+      color: var(--gray-500);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .timer {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--danger-600);
+      background: var(--gray-100);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--gray-200);
+      min-width: 80px;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .file-upload {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .file-input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 2px dashed var(--gray-300);
+      border-radius: var(--radius-md);
+      background: white;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .file-input:hover {
+      border-color: var(--primary-400);
+    }
+
+    .status-bar {
+      background: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      font-weight: 500;
+      color: var(--gray-700);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-height: 3.5rem;
+    }
+
+    .status-bar.success {
+      background: #ecfdf5;
+      border-color: var(--success-300);
+      color: var(--success-700);
+    }
+
+    .status-bar.error {
+      background: #fef2f2;
+      border-color: var(--danger-300);
+      color: var(--danger-700);
+    }
+
+    .progress-container {
+      margin: 1.5rem 0;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 0.75rem;
+      background: var(--gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--success-500), var(--success-600));
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: var(--radius-lg);
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2.5rem;
+    }
+
+    .result-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: all 0.3s ease;
+    }
+
+    .result-card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    .result-header {
+      padding: 1.5rem 2rem;
+      background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .result-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin: 0;
+    }
+
+    .result-content {
+      padding: 2rem;
+      min-height: 150px;
+    }
+
+    .summary-card {
+      grid-column: 1 / -1;
+      margin-top: 1rem;
+    }
+
+    .transcript-text, .summary-text {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 400px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--gray-300) transparent;
+    }
+
+    .transcript-text::-webkit-scrollbar,
+    .summary-text::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .transcript-text::-webkit-scrollbar-thumb,
+    .summary-text::-webkit-scrollbar-thumb {
+      background: var(--gray-300);
+      border-radius: 3px;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+      color: var(--gray-500);
+      text-align: center;
+      min-height: 120px;
+    }
+
+    .empty-state .icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .file-info {
+      background: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .audio-player {
+      width: 100%;
+      margin: 1rem 0;
+      border-radius: var(--radius-md);
+      background: var(--gray-50);
+    }
+
+    @media (max-width: 1024px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      
+      .main-card {
+        padding: 1.5rem;
+      }
+
+      .app-title {
+        font-size: 2rem;
+      }
+
+      .file-input-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    /* Dark mode toggle switch */
+    .theme-toggle-container {
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 100;
+    }
+
+    .theme-toggle-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      transition: color 0.3s ease;
+    }
+
+    .theme-toggle {
+      position: relative;
+      display: inline-block;
+      width: 3.5rem;
+      height: 2rem;
+    }
+
+    .theme-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .theme-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--gray-300);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 2rem;
+      border: 2px solid var(--border-secondary);
+    }
+
+    .theme-slider:before {
+      position: absolute;
+      content: "";
+      height: 1.25rem;
+      width: 1.25rem;
+      left: 0.125rem;
+      bottom: 0.125rem;
+      background: white;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-slider:after {
+      content: "☀️";
+      position: absolute;
+      left: 0.125rem;
+      bottom: 0.125rem;
+      height: 1.25rem;
+      width: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    input:checked + .theme-slider {
+      background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+      border-color: var(--primary-400);
+    }
+
+    input:checked + .theme-slider:before {
+      transform: translateX(1.5rem);
+      background: var(--surface-primary);
+    }
+
+    input:checked + .theme-slider:after {
+      content: "🌙";
+      transform: translateX(1.5rem);
+    }
+
+    .theme-slider:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Update other components for dark mode */
+    .status-bar {
+      background: var(--surface-secondary);
+      border: 1px solid var(--border-primary);
+      color: var(--text-secondary);
+    }
+
+    .result-card {
+      background: var(--surface-primary);
+      border: 1px solid var(--border-primary);
+    }
+
+    .result-header {
+      background: var(--surface-secondary);
+      border-bottom: 1px solid var(--border-primary);
+    }
+
+    .result-title {
+      color: var(--text-primary);
+    }
+
+    .transcript-text, .summary-text {
+      background: var(--surface-secondary);
+      border: 1px solid var(--border-primary);
+      color: var(--text-secondary);
+    }
+
+    .file-info {
+      background: var(--surface-tertiary);
+      border: 1px solid var(--border-primary);
+      color: var(--text-tertiary);
+    }
+
+    .file-input {
+      background: var(--surface-primary);
+      border: 2px dashed var(--border-secondary);
+      color: var(--text-secondary);
+    }
+
+    .empty-state {
+      color: var(--text-tertiary);
+    }
+
+    .timer {
+      background: var(--surface-secondary);
+      border: 2px solid var(--border-primary);
+      color: var(--text-primary);
+    }
+
+    .progress-bar {
+      background: var(--surface-tertiary);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <main class="main-card">
+      <!-- Dark Mode Toggle -->
+      <div class="theme-toggle-container">
+        <span class="theme-toggle-label">Light</span>
+        <label class="theme-toggle">
+          <input type="checkbox" id="themeToggle">
+          <span class="theme-slider"></span>
+        </label>
+        <span class="theme-toggle-label">Dark</span>
+      </div>
+
+      <header class="app-header" style="display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:start;max-width:900px;margin:auto;">
+        <div>
+          <h1 class="app-title">Meeting Assistant</h1>
+          <form id="meetingForm" style="margin:2rem 0 1rem 0;max-width:420px;background:var(--surface-secondary);padding:1.5rem 2rem;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:1.2rem;">
+            <label style="font-weight:600;color:var(--text-primary);">With whom?</label>
+            <input type="text" id="meetingWith" name="meetingWith" required placeholder="Enter names (comma separated)" style="padding:0.75rem;border-radius:var(--radius-md);border:1px solid var(--border-primary);font-size:1rem;">
+            <label style="font-weight:600;color:var(--text-primary);">When?</label>
+            <input type="datetime-local" id="meetingTime" name="meetingTime" required style="padding:0.75rem;border-radius:var(--radius-md);border:1px solid var(--border-primary);font-size:1rem;">
+            <button type="submit" class="btn btn-secondary" style="margin-top:1rem;">Save Meeting</button>
+            <div id="meetingFormStatus" style="font-size:0.95rem;color:var(--danger-500);"></div>
+          </form>
+          <div class="meeting-info" id="meetingInfoDisplay" style="display:none;">
+            <span class="icon">📅</span>
+            <span>Meeting with <strong id="person"></strong> at <strong id="time"></strong></span>
+          </div>
+        </div>
+        <div>
+          <div id="meetingsList" style="max-width:420px;margin:2rem 0 0 0;background:var(--surface-secondary);padding:1.5rem 2rem;border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);">
+            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;color:var(--text-primary);">Saved Meetings</h2>
+            <ul id="meetingsUl" style="list-style:none;padding:0;margin:0;color:var(--text-secondary);"></ul>
+          </div>
+        </div>
+      </header>
+
+      <section class="controls-grid">
+        <div class="control-card">
+          <h2 class="control-title">
+            <span class="icon"></span>
+            Record Meeting
+          </h2>
+          <div class="record-controls">
+            <form id="recordMeetingForm" style="display:flex;flex-direction:column;gap:0.7rem;margin-bottom:1rem;">
+              <label style="font-weight:600;color:var(--text-primary);">With whom?</label>
+              <input type="text" id="recordMeetingWith" name="recordMeetingWith" required placeholder="Enter names (comma separated)" style="padding:0.75rem;border-radius:var(--radius-md);border:1px solid var(--border-primary);font-size:1rem;">
+            </form>
+            <button id="recordBtn" class="btn btn-primary">
+              <span></span>
+              Start Recording
+            </button>
+            <div id="timer" class="timer"></div>
+          </div>
+        </div>
+
+        <div class="control-card">
+          <h2 class="control-title">
+            <span class="icon"></span>
+            Upload Audio File
+          </h2>
+          <div class="file-upload">
+            <div class="file-input-wrapper">
+              <input type="file" id="audioFileInput" accept="audio/*" class="file-input">
+              <button id="uploadBtn" class="btn btn-secondary" disabled>
+                <span></span>
+                Upload Audio
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="status" class="status-bar"></div>
+      
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div id="progress-bar" class="progress-fill"></div>
+        </div>
+      </div>
+
+      <section class="results-grid">
+        <article class="result-card">
+          <header class="result-header">
+            <span class="icon">🎵</span>
+            <h3 class="result-title">Audio Playback</h3>
+          </header>
+          <div class="result-content">
+            <audio id="player" controls class="audio-player"></audio>
+            <div id="fileInfo" class="file-info"></div>
+          </div>
+        </article>
+
+        <article class="result-card">
+          <header class="result-header">
+            <span class="icon">📝</span>
+            <h3 class="result-title">Transcript</h3>
+          </header>
+          <div class="result-content">
+            <div id="transcript" class="empty-state">
+              <div class="icon">📄</div>
+              <p>No transcript yet</p>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <article class="result-card summary-card">
+        <header class="result-header">
+          <span class="icon">📋</span>
+          <h3 class="result-title">Meeting Summary</h3>
+        </header>
+        <div class="result-content">
+          <div id="summary" class="empty-state">
+            <div class="icon">📊</div>
+            <p>No summary yet</p>
+          </div>
+        </div>
+      </article>
+
+    </main>
+  </div>
+
+<script>
+(async function(){
+  const WEBHOOK_URL = "https://n8n.srv898271.hstgr.cloud/webhook/webhook/meeting-transcript"; // updated to new n8n webhook
+  const WEBHOOK_BEARER = ""; // no authentication
+
+  // Dark Mode Functionality
+  const themeToggle = document.getElementById('themeToggle');
+  const body = document.body;
+  
+  // Check for saved theme preference or default to light mode
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const initialTheme = savedTheme === 'system' ? (systemPrefersDark ? 'dark' : 'light') : savedTheme;
+  
+  // Apply initial theme
+  body.setAttribute('data-theme', initialTheme);
+  themeToggle.checked = initialTheme === 'dark';
+
+  // Theme toggle event listener
+  themeToggle.addEventListener('change', function() {
+    const newTheme = this.checked ? 'dark' : 'light';
+    body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    // Add a subtle transition effect
+    body.style.transition = 'all 0.3s ease';
+    setTimeout(() => {
+      body.style.transition = '';
+    }, 300);
+  });
+
+  // Listen for system theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (localStorage.getItem('theme') === 'system') {
+      const newTheme = e.matches ? 'dark' : 'light';
+      body.setAttribute('data-theme', newTheme);
+      themeToggle.checked = newTheme === 'dark';
+    }
+  });
+
+  const recordBtn = document.getElementById('recordBtn');
+  const timerEl = document.getElementById('timer');
+  const statusEl = document.getElementById('status');
+  const progressBar = document.getElementById('progress-bar');
+  const player = document.getElementById('player');
+  const fileInfo = document.getElementById('fileInfo');
+  const transcriptDiv = document.getElementById('transcript');
+  const summaryDiv = document.getElementById('summary');
+  const audioFileInput = document.getElementById('audioFileInput');
+  const uploadBtn = document.getElementById('uploadBtn');
+
+  // Meeting details form logic
+  const meetingForm = document.getElementById('meetingForm');
+  const meetingWithInput = document.getElementById('meetingWith');
+  const meetingTimeInput = document.getElementById('meetingTime');
+  const meetingFormStatus = document.getElementById('meetingFormStatus');
+  const meetingInfoDisplay = document.getElementById('meetingInfoDisplay');
+  const personEl = document.getElementById('person');
+  const timeEl = document.getElementById('time');
+
+  // Modern status update function
+    function updateStatus(message, type = 'info') {
+      statusEl.textContent = message;
+      statusEl.className = `status-bar ${type}`;
+      statusEl.style.display = message ? 'flex' : 'none';
+    }
+  
+    // Enhanced file info display
+    function updateFileInfo(file) {
+    if (!file) {
+      fileInfo.style.display = 'none';
+      return;
+    }
+    const formatSize = (bytes) => {
+      const units = ['B', 'KB', 'MB', 'GB'];
+      let size = bytes;
+      let unitIndex = 0;
+      while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
+        unitIndex++;
+      }
+      return `${size.toFixed(1)} ${units[unitIndex]}`;
+    };
+    const duration = file.duration ? ` • ${Math.floor(file.duration / 60)}:${(file.duration % 60).toString().padStart(2, '0')}` : '';
+    fileInfo.innerHTML = `
+      <div><strong>File:</strong> ${file.name || 'recorded-audio.webm'}</div>
+      <div><strong>Type:</strong> ${file.type || 'audio/webm'}</div>
+      <div><strong>Size:</strong> ${formatSize(file.size)}${duration}</div>
+    `;
+    fileInfo.style.display = 'block';
+  }
+
+  let mediaRecorder, chunks = [], startTime, timerInterval;
+  let mimeType = "";
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    updateStatus("🚫 Microphone not supported in this browser.", 'error');
+    recordBtn.disabled = true;
+    return;
+  }
+
+  if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) mimeType = "audio/webm;codecs=opus";
+  else if (MediaRecorder.isTypeSupported("audio/ogg")) mimeType = "audio/ogg";
+  else mimeType = "audio/webm";
+
+  audioFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    uploadBtn.disabled = !file;
+    
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('audio/')) {
+        updateStatus('⚠️ Please select a valid audio file.', 'error');
+        audioFileInput.value = '';
+        uploadBtn.disabled = true;
+        return;
+      }
+      
+      player.src = URL.createObjectURL(file);
+      updateFileInfo(file);
+      updateStatus(`✅ Audio file selected: ${file.name}`, 'success');
+    } else {
+      updateFileInfo(null);
+      updateStatus('');
+    }
+  });
+
+  uploadBtn.addEventListener('click', () => {
+    const file = audioFileInput.files[0];
+    if (!file) { 
+      updateStatus("⚠️ Please select an audio file first.", 'error'); 
+      return; 
+    }
+    uploadAudio(file);
+  });
+
+  recordBtn.addEventListener('click', async () => {
+    const recordMeetingWithInput = document.getElementById('recordMeetingWith');
+    const meetingWithValue = recordMeetingWithInput.value.trim();
+    if (!meetingWithValue) {
+      updateStatus('Please enter with whom the meeting is (can be multiple people).', 'error');
+      recordMeetingWithInput.focus();
+      return;
+    }
+    if (!mediaRecorder || mediaRecorder.state === "inactive") {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
+        chunks = [];
+        mediaRecorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+        mediaRecorder.onerror = e => { statusEl.innerText = "Recording error: " + e.message; };
+        mediaRecorder.start(1000);
+        recordBtn.innerHTML = "<span>⏹</span>Stop Recording";
+        updateStatus("🎤 Recording in progress...", 'info');
+        startTimer();
+        // Save the meetingWithValue for later upload
+        recordBtn.dataset.meetingWith = meetingWithValue;
+      } catch (err) {
+        updateStatus("❌ Could not start recording: " + err.message, 'error');
+      }
+    } else {
+      mediaRecorder.onstop = () => {
+        stopTimer();
+        updateStatus("🔄 Processing audio...", 'info');
+        recordBtn.disabled = true;
+
+        const blob = new Blob(chunks, { type: mimeType });
+        player.src = URL.createObjectURL(blob);
+        updateFileInfo(blob);
+
+        // Use the meetingWith value from the input
+        uploadAudio(blob, recordBtn.dataset.meetingWith);
+      };
+      mediaRecorder.stop();
+      recordBtn.innerHTML = "<span></span>Start Recording";
+      updateStatus("⏹ Stopping recording...", 'info');
+    }
+  });
+
+  function startTimer(){
+    startTime = Date.now();
+    timerEl.innerText = "00:00";
+    timerInterval = setInterval(()=>{
+      const s = Math.floor((Date.now()-startTime)/1000);
+      const mm = String(Math.floor(s/60)).padStart(2,'0'), ss = String(s%60).padStart(2,'0');
+      timerEl.innerText = `${mm}:${ss}`;
+    }, 500);
+  }
+  function stopTimer(){ clearInterval(timerInterval); timerEl.innerText = ""; }
+
+  function uploadAudio(file, meetingWithOverride){
+    updateStatus("📤 Uploading audio file...", 'info');
+    uploadBtn.disabled = true;
+    recordBtn.disabled = true;
+
+    const form = new FormData();
+    form.append('file', file, file.name || 'meeting.' + (file.type && file.type.includes('webm') ? 'webm' : 'ogg'));
+    // Use override if provided (from recording), else use display value (from meeting form)
+    const meetingWith = meetingWithOverride || document.getElementById('person').innerText;
+    form.append('meeting_with', meetingWith);
+    form.append('meeting_time', document.getElementById('time').innerText);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', WEBHOOK_URL, true);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + WEBHOOK_BEARER);
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        progressBar.style.width = pct + '%';
+      }
+    };
+
+    xhr.onload = () => {
+      uploadBtn.disabled = false;
+      recordBtn.disabled = false;
+      progressBar.style.width = '100%';
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          updateStatus("✅ Processing complete!", 'success');
+
+          // --- Handle transcript ---
+          let transcriptText = "";
+          if (typeof res.transcript === "string") {
+            transcriptText = res.transcript;
+          } else if (Array.isArray(res.transcript)) {
+            transcriptText = res.transcript.map(i => i.text || "").join("\n\n");
+          }
+          
+          if (transcriptText.trim()) {
+            transcriptDiv.innerHTML = `<div class="transcript-text">${escapeHtml(transcriptText)}</div>`;
+          } else {
+            transcriptDiv.innerHTML = `
+              <div class="empty-state">
+                <div class="icon">❌</div>
+                <p>No transcript available</p>
+              </div>
+            `;
+          }
+
+          // --- Handle summary ---
+          let summaryText = "";
+          if (typeof res.summary === "string") {
+            summaryText = res.summary;
+          } else if (Array.isArray(res.summary)) {
+            summaryText = res.summary.map(i => i.text || "").join("\n\n");
+          }
+          
+          if (summaryText.trim()) {
+            const formattedSummary = formatSummary(summaryText);
+            summaryDiv.innerHTML = `<div class="summary-text">${formattedSummary}</div>`;
+          } else {
+            summaryDiv.innerHTML = `
+              <div class="empty-state">
+                <div class="icon">❌</div>
+                <p>No summary available</p>
+              </div>
+            `;
+          }
+
+        } catch (e) {
+          updateStatus("❌ Error parsing server response", 'error');
+        }
+      } else {
+        updateStatus(`❌ Upload failed: ${xhr.status} ${xhr.statusText}`, 'error');
+      }
+    };
+
+    xhr.onerror = () => {
+      uploadBtn.disabled = false;
+      recordBtn.disabled = false;
+      updateStatus("🌐 Network error while uploading.", 'error');
+    };
+
+    xhr.send(form);
+  }
+
+  // API Base URL - change this after deploying to Render
+  // For local development: 'http://localhost:8000'
+  // For production: 'https://your-app-name.onrender.com'
+  const API_BASE_URL = window.location.origin;
+
+  async function fetchMeetings() {
+    const meetingsUl = document.getElementById('meetingsUl');
+    meetingsUl.innerHTML = '<li>Loading...</li>';
+    try {
+      const res = await fetch(`${API_BASE_URL}/meetings`);
+      if (res.ok) {
+        const meetings = await res.json();
+        if (meetings.length === 0) {
+          meetingsUl.innerHTML = '<li>No meetings saved yet.</li>';
+        } else {
+          meetingsUl.innerHTML = meetings.map(m => {
+            let names = Array.isArray(m.with_whom) ? m.with_whom.join(', ') : m.with_whom;
+            return `<li style='margin-bottom:0.7rem;padding-bottom:0.7rem;border-bottom:1px solid var(--border-primary);'><strong>${names}</strong><br><span style='font-size:0.95rem;'>${new Date(m.when).toLocaleString()}</span></li>`;
+          }).join('');
+        }
+      } else {
+        meetingsUl.innerHTML = '<li>Error loading meetings.</li>';
+      }
+    } catch {
+      meetingsUl.innerHTML = '<li>Could not connect to backend.</li>';
+    }
+  }
+
+  meetingForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    meetingFormStatus.textContent = '';
+    const meetingWith = meetingWithInput.value.trim();
+    const meetingTime = meetingTimeInput.value;
+    if (!meetingWith || !meetingTime) {
+      meetingFormStatus.textContent = 'Please fill in all fields.';
+      return;
+    }
+    // Send to FastAPI backend
+    try {
+      const res = await fetch(`${API_BASE_URL}/meetings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ with_whom: meetingWith, when: meetingTime })
+      });
+      if (res.ok) {
+        meetingFormStatus.style.color = 'var(--success-500)';
+        meetingFormStatus.textContent = 'Meeting saved!';
+        // Update display
+        personEl.textContent = meetingWith;
+        timeEl.textContent = new Date(meetingTime).toLocaleString();
+        meetingInfoDisplay.style.display = '';
+        fetchMeetings();
+      } else {
+        meetingFormStatus.style.color = 'var(--danger-500)';
+        meetingFormStatus.textContent = 'Error saving meeting.';
+      }
+    } catch (err) {
+      meetingFormStatus.style.color = 'var(--danger-500)';
+      meetingFormStatus.textContent = 'Could not connect to backend.';
+    }
+  });
+
+  fetchMeetings();
+
+  function escapeHtml(str){ 
+    return (str||"").replace(/[&<>]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch])); 
+  }
+  
+  function formatSummary(text) {
+    if (!text) return "";
+    let formatted = escapeHtml(text);
+    
+    // Format numbered lists and bullet points
+    formatted = formatted.replace(/^(\d+\.\s+)/gm, '<strong>$1</strong>');
+    formatted = formatted.replace(/^(-\s+)/gm, '<span style="color:#666;">•</span> ');
+    
+    // Format section headers (lines that end with :)
+    formatted = formatted.replace(/^([^:\n]+:)$/gm, '<strong style="color:#333;font-size:16px;">$1</strong>');
+    
+    // Format key-value pairs
+    formatted = formatted.replace(/^([A-Za-z\s]+):\s*(.+)$/gm, '<strong>$1:</strong> $2');
+    
+    // Add line breaks for better readability
+    formatted = formatted.replace(/\n/g, '<br>');   
+    return formatted;
+  }
+
+})();
+</script>
+</body>
+</html>
