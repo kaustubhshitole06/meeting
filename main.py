@@ -6,6 +6,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from typing import List
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -34,24 +39,48 @@ class Meeting(BaseModel):
 
 @app.post("/meetings")
 def create_meeting(meeting: Meeting):
-    # Insert meeting into Supabase
-    url = f"{SUPABASE_URL}/rest/v1/{SUPABASE_TABLE}"
-    headers = {
-        "apikey": SUPABASE_API_KEY,
-        "Authorization": f"Bearer {SUPABASE_API_KEY}",
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal"
-    }
-    data = meeting.model_dump()  # Updated for Pydantic v2
-    # Accept both string and list for with_whom
-    if isinstance(data["with_whom"], str):
-        # Split comma-separated names
-        data["with_whom"] = [name.strip() for name in data["with_whom"].split(",")]
-    resp = requests.post(url, headers=headers, json=data)
-    if resp.status_code in (200, 201, 204):
-        return {"message": "Meeting saved"}
-    else:
-        raise HTTPException(status_code=500, detail=f"Supabase error: {resp.text}")
+    try:
+        # Insert meeting into Supabase
+        url = f"{SUPABASE_URL}/rest/v1/{SUPABASE_TABLE}"
+        headers = {
+            "apikey": SUPABASE_API_KEY,
+            "Authorization": f"Bearer {SUPABASE_API_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "return=representation"
+        }
+        data = meeting.model_dump()  # Updated for Pydantic v2
+        # Accept both string and list for with_whom
+        if isinstance(data["with_whom"], str):
+            # Split comma-separated names
+            data["with_whom"] = [name.strip() for name in data["with_whom"].split(",")]
+        
+        # Convert datetime-local format to ISO format for Supabase
+        if data["when"]:
+            # Ensure proper timestamp format
+            when_value = data["when"]
+            # If it doesn't have seconds, add them
+            if when_value.count(":") == 1:
+                when_value = when_value + ":00"
+            # Add timezone if not present (assume UTC)
+            if "Z" not in when_value and "+" not in when_value and "-" not in when_value[-6:]:
+                when_value = when_value + "Z"
+            data["when"] = when_value
+        
+        logger.info(f"Sending data to Supabase: {data}")
+        resp = requests.post(url, headers=headers, json=data)
+        logger.info(f"Supabase response: {resp.status_code} - {resp.text}")
+        
+        if resp.status_code in (200, 201, 204):
+            return {"message": "Meeting saved", "data": resp.json() if resp.text else None}
+        else:
+            error_detail = resp.text if resp.text else "Unknown Supabase error"
+            logger.error(f"Supabase error: {error_detail}")
+            raise HTTPException(status_code=500, detail=f"Supabase error: {error_detail}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error saving meeting: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
 @app.get("/meetings")
 def get_meetings():
